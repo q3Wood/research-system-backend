@@ -1,0 +1,107 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.acha.project.mapper.UserMapper">
+
+    <!-- 开启二级缓存 (可选) -->
+    <!-- <cache/> -->
+
+    <!-- 通用查询映射结果 -->
+    <resultMap id="BaseResultMap" type="com.acha.project.model.entity.User">
+        <id column="id" property="id" />
+        <result column="username" property="username" />
+        <result column="password" property="password" />
+        <result column="real_name" property="realName" />
+        <result column="role" property="role" />
+        <result column="phone" property="phone" />
+        <result column="email" property="email" />
+        <result column="create_time" property="createTime" />
+        <result column="update_time" property="updateTime" />
+        <result column="del_flag" property="delFlag" />
+    </resultMap>
+
+    <!-- 通用查询结果列 -->
+    <sql id="Base_Column_List">
+        id, username, password, real_name, role, phone, email, create_time, update_time, del_flag
+    </sql>
+
+    <!-- 1. 根据用户名统计数量 -->
+    <select id="countByUsername" resultType="java.lang.Long">
+        SELECT COUNT(*)
+        FROM sys_user
+        WHERE username = #{username}
+    </select>
+
+    <!-- 2. 插入用户 -->
+    <insert id="insertUser" useGeneratedKeys="true" keyProperty="id">
+        INSERT INTO sys_user (
+            username, 
+            password, 
+            real_name, 
+            role, 
+            create_time, 
+            update_time, 
+            del_flag
+        )
+        VALUES (
+            #{username}, 
+            #{password}, 
+            #{realName}, 
+            #{role}, 
+            NOW(), 
+            NOW(), 
+            0
+        )
+    </insert>
+
+    <!-- 3. 根据用户名查询并过滤逻辑删除 -->
+    <select id="selectByUsername" resultMap="BaseResultMap">
+        SELECT 
+        <include refid="Base_Column_List"/>
+        FROM sys_user
+        WHERE username = #{username} 
+          AND del_flag = 0
+    </select>
+
+    <!-- 4. 根据ID查询并过滤逻辑删除 -->
+    <select id="selectUserById" resultMap="BaseResultMap">
+        SELECT 
+        <include refid="Base_Column_List"/>
+        FROM sys_user
+        WHERE id = #{id} 
+          AND del_flag = 0
+    </select>
+
+    <!-- 5. 动态更新用户信息 -->
+    <update id="updateUser">
+        UPDATE sys_user
+        <set>
+            <if test="password != null and password != ''">
+                password = #{password},
+            </if>
+            <if test="realName != null and realName != ''">
+                real_name = #{realName},
+            </if>
+            <if test="role != null">
+                role = #{role},
+            </if>
+            <if test="phone != null and phone != ''">
+                phone = #{phone},
+            </if>
+            <if test="email != null and email != ''">
+                email = #{email},
+            </if>
+            update_time = NOW()
+        </set>
+        WHERE id = #{id}
+    </update>
+
+    <!-- 6. 查询所有用户 -->
+    <select id="selectAllUsers" resultMap="BaseResultMap">
+        SELECT 
+        <include refid="Base_Column_List"/>
+        FROM sys_user
+        WHERE del_flag = 0
+        ORDER BY create_time DESC
+    </select>
+
+</mapper>
