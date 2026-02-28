@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.acha.project.mapper.ProjectInfoMapper">
+
+    <!-- 新增科研项目 -->
+    <insert id="addProject" useGeneratedKeys="true" keyProperty="id">
+        INSERT INTO project_info (
+            project_name, 
+            description, 
+            budget, 
+            balance, 
+            status, 
+            leader_id, 
+            del_flag,
+            create_time, 
+            update_time
+        ) VALUES (
+            #{projectName}, 
+            #{description}, 
+            #{budget}, 
+            #{balance}, 
+            #{status}, 
+            #{leaderId}, 
+            0,
+            NOW(), 
+            NOW()
+        )
+    </insert>
+
+</mapper>
