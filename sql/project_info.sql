@@ -9,7 +9,7 @@
 -- ==========================================================
 -- 表名：research_project (科研项目主表 - 终极版)
 -- ==========================================================
-CREATE TABLE `research_project` (
+CREATE TABLE `project_info` (
   `id` BIGINT NOT NULL AUTO_INCREMENT COMMENT '项目ID',
   `project_name` VARCHAR(100) NOT NULL COMMENT '项目名称',
   `description` TEXT COMMENT '项目简介',

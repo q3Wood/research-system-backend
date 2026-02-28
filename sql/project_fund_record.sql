@@ -21,7 +21,7 @@ CREATE TABLE `project_fund_record` (
   `create_time` DATETIME DEFAULT CURRENT_TIMESTAMP COMMENT '申请提交时间',
   `update_time` DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '最后状态更新时间',
   PRIMARY KEY (`id`),
-  CONSTRAINT `fk_fund_project` FOREIGN KEY (`project_id`) REFERENCES `research_project` (`id`) ON DELETE CASCADE,
+  CONSTRAINT `fk_fund_project` FOREIGN KEY (`project_id`) REFERENCES `project_info` (`id`) ON DELETE CASCADE,
   CONSTRAINT `fk_fund_applicant` FOREIGN KEY (`applicant_id`) REFERENCES `sys_user` (`id`) ON DELETE RESTRICT,
   CONSTRAINT `chk_fund_amount` CHECK (`amount` > 0)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='经费报销申请表';

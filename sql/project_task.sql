@@ -22,7 +22,7 @@ CREATE TABLE `project_task` (
   `create_time` DATETIME DEFAULT CURRENT_TIMESTAMP COMMENT '派发时间',
   `update_time` DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '最后更新时间',
   PRIMARY KEY (`id`),
-  CONSTRAINT `fk_task_project` FOREIGN KEY (`project_id`) REFERENCES `research_project` (`id`) ON DELETE CASCADE,
+  CONSTRAINT `fk_task_project` FOREIGN KEY (`project_id`) REFERENCES `project_info` (`id`) ON DELETE CASCADE,
   CONSTRAINT `fk_task_assigner` FOREIGN KEY (`assigner_id`) REFERENCES `sys_user` (`id`) ON DELETE RESTRICT,
   CONSTRAINT `fk_task_assignee` FOREIGN KEY (`assignee_id`) REFERENCES `sys_user` (`id`) ON DELETE RESTRICT,
   CONSTRAINT `chk_task_status` CHECK (`status` IN (0, 1, 2))
