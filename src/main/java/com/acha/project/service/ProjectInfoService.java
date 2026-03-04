@@ -1,5 +1,6 @@
 package com.acha.project.service;
 
+import com.acha.project.model.dto.project.info.ProjectAuditRequestDTO;
 import com.acha.project.model.entity.ProjectInfo;
 import com.baomidou.mybatisplus.extension.service.IService;
 
@@ -13,5 +14,11 @@ public interface ProjectInfoService extends IService<ProjectInfo>{
      * @return 创建成功的项目信息
      */
     void addProject(String projectName, String description, java.math.BigDecimal budget);
+
+    /**
+     * 审核科研项目
+     * @param request 审核请求体
+     */
+    void auditProject(ProjectAuditRequestDTO request);
     
 }

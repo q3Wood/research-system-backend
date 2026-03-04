@@ -9,7 +9,8 @@ public enum ErrorCode {
     NOT_LOGIN_ERROR(401, "未登录"),
     NO_AUTH_ERROR(403, "无权限"),
     NOT_FOUND_ERROR(404, "请求数据不存在"),
-    SYSTEM_ERROR(500, "系统内部异常");
+    SYSTEM_ERROR(500, "系统内部异常"),
+    OPERATION_ERROR(600, "业务操作失败");
 
     private final int code;
     private final String message;

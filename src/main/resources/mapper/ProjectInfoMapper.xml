@@ -28,4 +28,17 @@
         )
     </insert>
 
+    <!-- 根据主键查询项目 -->
+    <select id="getProjectById" resultType="com.acha.project.model.entity.ProjectInfo">
+        SELECT * FROM project_info 
+        WHERE id = #{id} AND del_flag = 0
+    </select>
+
+    <!-- 更新项目状态 -->
+    <update id="updateProjectStatus">
+        UPDATE project_info
+        SET status = #{status}, update_time = NOW()
+        WHERE id = #{id} AND del_flag = 0
+    </update>
+
 </mapper>

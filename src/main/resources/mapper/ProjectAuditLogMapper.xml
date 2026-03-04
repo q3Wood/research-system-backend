@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.acha.project.mapper.ProjectAuditLogMapper">
+
+    <!-- 新增审批流水 -->
+    <insert id="insertAuditLog" useGeneratedKeys="true" keyProperty="id">
+        INSERT INTO project_audit_log (
+            project_id,
+            module_type,
+            business_id,
+            operator_id,
+            action,
+            remark,
+            create_time
+        ) VALUES (
+            #{projectId},
+            #{moduleType},
+            #{businessId},
+            #{operatorId},
+            #{action},
+            #{remark},
+            NOW()
+        )
+    </insert>
+
+</mapper>
