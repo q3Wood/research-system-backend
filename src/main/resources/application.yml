@@ -8,6 +8,13 @@
   application:
     name: backend-template
 # 上传测试
+  servlet:
+    multipart:
+      max-file-size: 50MB
+      max-request-size: 50MB
+  web:
+    resources:
+      static-locations: classpath:/static/
   # 1. 数据源配置 (MySQL)
   datasource:
     driver-class-name: com.mysql.cj.jdbc.Driver
