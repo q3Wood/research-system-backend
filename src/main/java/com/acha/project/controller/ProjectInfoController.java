@@ -55,4 +55,16 @@ public class ProjectInfoController {
         return BaseResponse.success("审核操作成功");
     }
 
+    /**
+     * 分页查询项目列表
+     * @param request 分页与查询条件
+     * @return 带分页的项目列表
+     */
+    @PostMapping("/list/page")
+    @Operation(summary = "项目列表分页查询", description = "普通用户只能看自己申请的项目，管理员能看所有项目")
+    public BaseResponse<com.baomidou.mybatisplus.extension.plugins.pagination.Page<com.acha.project.model.vo.project.ProjectInfoVO>> listProjectByPage(
+            @RequestBody com.acha.project.model.dto.project.info.ProjectQueryRequestDTO request) {
+        return BaseResponse.success(projectInfoService.pageProjects(request));
+    }
+
 }

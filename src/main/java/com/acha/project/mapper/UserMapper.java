@@ -51,4 +51,20 @@ public interface UserMapper extends BaseMapper<User> {
      * @return 用户列表
      */
     java.util.List<User> selectAllUsers();
+
+    /**
+     * 查询满足条件的用户总数
+     * @param requestDTO 筛选条件
+     * @return 数量
+     */
+    long countUsers(@Param("requestDTO") com.acha.project.model.dto.user.UserQueryRequestDTO requestDTO);
+
+    /**
+     * 分页查询满足条件的用户
+     * @param requestDTO 筛选条件
+     * @param offset 偏移量
+     * @param limit 每页数量
+     * @return 用户列表
+     */
+    java.util.List<User> listUsersByPage(@Param("requestDTO") com.acha.project.model.dto.user.UserQueryRequestDTO requestDTO, @Param("offset") long offset, @Param("limit") long limit);
 }

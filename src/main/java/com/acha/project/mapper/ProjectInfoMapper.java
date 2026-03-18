@@ -30,4 +30,22 @@ public interface ProjectInfoMapper extends BaseMapper<ProjectInfo> {
      * @return 影响行数
      */
     int updateProjectStatus(@Param("id") Long id, @Param("status") Integer status);
+
+    /**
+     * 分页查询：统计总数
+     * 普通用户(role=0)只能看见自己的任务，管理员可以看见全部
+     */
+    long countProjects(@Param("requestDTO") com.acha.project.model.dto.project.info.ProjectQueryRequestDTO requestDTO, 
+                       @Param("userId") Long userId, 
+                       @Param("role") Integer role);
+
+    /**
+     * 分页查询：获取含负责人姓名的列表
+     */
+    java.util.List<com.acha.project.model.vo.project.ProjectInfoVO> listProjectsByPage(
+            @Param("requestDTO") com.acha.project.model.dto.project.info.ProjectQueryRequestDTO requestDTO, 
+            @Param("userId") Long userId, 
+            @Param("role") Integer role, 
+            @Param("offset") long offset, 
+            @Param("limit") long limit);
 }

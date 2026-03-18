@@ -97,11 +97,44 @@
 
     <!-- 6. 查询所有用户 -->
     <select id="selectAllUsers" resultMap="BaseResultMap">
-        SELECT 
+        SELECT
         <include refid="Base_Column_List"/>
         FROM sys_user
         WHERE del_flag = 0
         ORDER BY create_time DESC
+    </select>
+
+    <!-- 手写分页查询：统计总数 -->
+    <select id="countUsers" resultType="java.lang.Long">
+        SELECT COUNT(*)
+        FROM sys_user
+        WHERE del_flag = 0
+        <if test="requestDTO != null">
+            <if test="requestDTO.searchText != null and requestDTO.searchText != ''">
+                AND (username LIKE CONCAT('%', #{requestDTO.searchText}, '%') OR real_name LIKE CONCAT('%', #{requestDTO.searchText}, '%'))
+            </if>
+            <if test="requestDTO.role != null">
+                AND role = #{requestDTO.role}
+            </if>
+        </if>
+    </select>
+
+    <!-- 手写分页查询：获取列表 -->
+    <select id="listUsersByPage" resultMap="BaseResultMap">
+        SELECT
+        <include refid="Base_Column_List"/>
+        FROM sys_user
+        WHERE del_flag = 0
+        <if test="requestDTO != null">
+            <if test="requestDTO.searchText != null and requestDTO.searchText != ''">
+                AND (username LIKE CONCAT('%', #{requestDTO.searchText}, '%') OR real_name LIKE CONCAT('%', #{requestDTO.searchText}, '%'))
+            </if>
+            <if test="requestDTO.role != null">
+                AND role = #{requestDTO.role}
+            </if>
+        </if>
+        ORDER BY create_time DESC
+        LIMIT #{limit} OFFSET #{offset}
     </select>
 
 </mapper>

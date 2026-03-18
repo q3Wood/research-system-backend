@@ -2,6 +2,8 @@ package com.acha.project.controller;
 
 import com.acha.project.common.BaseResponse;
 import com.acha.project.model.dto.project.task.ProjectTaskAssignRequestDTO;
+import com.acha.project.model.dto.project.task.TaskStatusUpdateRequestDTO;
+import com.acha.project.model.vo.project.task.ProjectTaskVO;
 import com.acha.project.service.ProjectTaskService;
 
 import io.swagger.v3.oas.annotations.Operation;
@@ -28,5 +30,18 @@ public class ProjectTaskController {
     public BaseResponse<String> assignTask(@RequestBody @Valid ProjectTaskAssignRequestDTO request) {
         projectTaskService.assignTask(request);
         return BaseResponse.success("任务派发成功");
+    }
+
+    @PostMapping("/updateStatus")
+    @Operation(summary = "更新任务进度", description = "执行人员汇报任务进度(开始做/已完成)")
+    public BaseResponse<String> updateTaskStatus(@RequestBody @Valid TaskStatusUpdateRequestDTO request) {
+        projectTaskService.updateTaskStatus(request);
+        return BaseResponse.success("任务进度更新成功");
+    }
+
+    @GetMapping("/list/{projectId}")
+    @Operation(summary = "查询项目下所有任务列表", description = "用于进度大盘展示计算，包含真实的执行人姓名和逾期状态计算")
+    public BaseResponse<java.util.List<ProjectTaskVO>> listTasksByProjectId(@PathVariable("projectId") Long projectId) {
+        return BaseResponse.success(projectTaskService.listTasksByProjectId(projectId));
     }
 }

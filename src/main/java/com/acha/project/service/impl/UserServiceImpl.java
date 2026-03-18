@@ -5,7 +5,9 @@ import cn.hutool.core.util.IdUtil;
 import cn.hutool.core.util.StrUtil;
 import cn.hutool.crypto.digest.BCrypt;
 import cn.hutool.json.JSONUtil;
+import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.acha.project.common.ErrorCode;
+import com.acha.project.model.dto.user.UserQueryRequestDTO;
 import com.acha.project.common.UserContext;
 import com.acha.project.constant.RedisConstant;
 import com.acha.project.constant.UserConstant;
@@ -300,5 +302,34 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
         
         // 3. 转 VO 列表
         return BeanUtil.copyToList(userList, UserVO.class);
+    }
+
+    @Override
+    public Page<UserVO> pageUsers(UserQueryRequestDTO request) {
+        // 1. 权限校验
+        LoginUserDTO currentUser = UserContext.get();
+        if (currentUser == null || currentUser.getRole() == 0) {
+            throw new BusinessException(ErrorCode.NO_AUTH_ERROR, "无权查看用户列表");
+        }
+
+        // 2. 取出分页参数
+        long limit = request.getPageSize();
+        long current = request.getCurrent();
+        long offset = (current - 1) * limit;
+
+        // 3. 手写SQL统计满足条件的总记录数 (对应Mapper中的 countUsers)
+        long total = this.baseMapper.countUsers(request);
+
+        // 4. 判断是否有数据，有则手写SQL查询记录 (对应Mapper中的 listUsersByPage)
+        java.util.List<User> userList = new java.util.ArrayList<>();
+        if (total > 0) {
+            userList = this.baseMapper.listUsersByPage(request, offset, limit);
+        }
+
+        // 5. 组装并返回带分页的 VO 列表
+        Page<UserVO> voPage = new Page<>(current, limit, total);
+        voPage.setRecords(BeanUtil.copyToList(userList, UserVO.class));
+
+        return voPage;
     }
 }

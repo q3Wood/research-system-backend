@@ -21,4 +21,12 @@ public interface ProjectInfoService extends IService<ProjectInfo>{
      */
     void auditProject(ProjectAuditRequestDTO request);
     
+    /**
+     * 分页查询项目列表
+     * @param request 筛选条件
+     * @return 包含项目信息的VO分页对象
+     */
+    com.baomidou.mybatisplus.extension.plugins.pagination.Page<com.acha.project.model.vo.project.ProjectInfoVO> pageProjects(
+        com.acha.project.model.dto.project.info.ProjectQueryRequestDTO request);
 }
+

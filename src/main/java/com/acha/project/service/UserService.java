@@ -1,7 +1,9 @@
 package com.acha.project.service;
 
 import com.acha.project.model.entity.User;
+import com.acha.project.model.dto.user.UserQueryRequestDTO;
 import com.acha.project.model.dto.user.UserUpdateMyRequestDTO;
+import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.acha.project.model.vo.user.UserVO;
 import com.baomidou.mybatisplus.extension.service.IService;
 
@@ -75,4 +77,9 @@ public interface UserService extends IService<User> {
      * @return 用户VO列表
      */
     java.util.List<UserVO> listAllUsers();
+
+    /**
+     * 分页查询用户列表
+     */
+    Page<UserVO> pageUsers(UserQueryRequestDTO request);
 }

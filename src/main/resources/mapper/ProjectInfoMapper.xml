@@ -41,4 +41,57 @@
         WHERE id = #{id} AND del_flag = 0
     </update>
 
+    <!-- 手写分页：统计项目总数（带权限控制与模糊查询） -->
+    <select id="countProjects" resultType="java.lang.Long">
+        SELECT COUNT(*)
+        FROM project_info p
+        WHERE p.del_flag = 0
+        <!-- 如果是普通用户(0)，只能查询自己负责的 -->
+        <if test="role == 0">
+            AND p.leader_id = #{userId}
+        </if>
+        <!-- 动态查询条件 -->
+        <if test="requestDTO != null">
+            <if test="requestDTO.searchText != null and requestDTO.searchText != ''">
+                AND p.project_name LIKE CONCAT('%', #{requestDTO.searchText}, '%')
+            </if>
+            <if test="requestDTO.status != null">
+                AND p.status = #{requestDTO.status}
+            </if>
+        </if>
+    </select>
+
+    <!-- 手写分页：查询项目列表记录（带有LEFT JOIN连表查询负责人的真实姓名） -->
+    <select id="listProjectsByPage" resultType="com.acha.project.model.vo.project.ProjectInfoVO">
+        SELECT 
+            p.id, 
+            p.project_name AS projectName, 
+            p.description, 
+            p.budget, 
+            p.balance, 
+            p.status, 
+            p.leader_id AS leaderId, 
+            p.create_time AS createTime, 
+            p.update_time AS updateTime,
+            u.real_name AS leaderName
+        FROM project_info p
+        LEFT JOIN sys_user u ON p.leader_id = u.id
+        WHERE p.del_flag = 0
+        <!-- 如果是普通用户(0)，只能查询自己负责的 -->
+        <if test="role == 0">
+            AND p.leader_id = #{userId}
+        </if>
+        <!-- 动态查询条件 -->
+        <if test="requestDTO != null">
+            <if test="requestDTO.searchText != null and requestDTO.searchText != ''">
+                AND p.project_name LIKE CONCAT('%', #{requestDTO.searchText}, '%')
+            </if>
+            <if test="requestDTO.status != null">
+                AND p.status = #{requestDTO.status}
+            </if>
+        </if>
+        ORDER BY p.create_time DESC
+        LIMIT #{limit} OFFSET #{offset}
+    </select>
+
 </mapper>

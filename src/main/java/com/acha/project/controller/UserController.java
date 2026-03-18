@@ -15,6 +15,9 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
 import org.springframework.web.bind.annotation.*;
 import java.util.List;
+import com.acha.project.model.dto.user.UserQueryRequestDTO;
+import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
+
 @RestController
 @RequestMapping("/user")
 @Tag(name = "用户管理", description = "用户注册、登录接口")
@@ -127,11 +130,10 @@ public class UserController {
         return BaseResponse.success(result, "修改角色成功");
     }
 
-    @GetMapping("/list")
-    @Operation(summary = "获取所有用户列表 (管理员)")
-    public BaseResponse<List<UserVO>> listAllUsers() {
-        
-        List<UserVO> userList = userService.listAllUsers();
-        return BaseResponse.success(userList, "获取用户列表成功");
+    @PostMapping("/list")
+    @Operation(summary = "分页获取所有用户列表 (管理员)")
+    public BaseResponse<Page<UserVO>> listAllUsers(@RequestBody UserQueryRequestDTO request) {
+        Page<UserVO> userPage = userService.pageUsers(request);
+        return BaseResponse.success(userPage, "分页获取用户列表成功");
     }
 }

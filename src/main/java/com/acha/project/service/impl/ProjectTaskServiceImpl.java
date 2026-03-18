@@ -9,6 +9,8 @@ import com.acha.project.model.dto.project.task.ProjectTaskAssignRequestDTO;
 import com.acha.project.model.entity.ProjectInfo;
 import com.acha.project.model.entity.ProjectTask;
 import com.acha.project.service.ProjectTaskService;
+import com.acha.project.model.dto.project.task.TaskStatusUpdateRequestDTO;
+import com.acha.project.model.vo.project.task.ProjectTaskVO;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import jakarta.annotation.Resource;
 import lombok.extern.slf4j.Slf4j;
@@ -59,5 +61,38 @@ public class ProjectTaskServiceImpl extends ServiceImpl<ProjectTaskMapper, Proje
 
         // 5. 保存任务
         projectTaskMapper.addTask(task);
+    }
+
+    @Override
+    @Transactional(rollbackFor = Exception.class)
+    public void updateTaskStatus(TaskStatusUpdateRequestDTO request) {
+        if (UserContext.get() == null || UserContext.get().getId() == null) {
+            throw new BusinessException(ErrorCode.NOT_LOGIN_ERROR);
+        }
+        Long currentUserId = UserContext.get().getId();
+
+        ProjectTask task = projectTaskMapper.getTaskById(request.getId());
+        if (task == null) {
+            throw new BusinessException(ErrorCode.NOT_FOUND_ERROR, "任务不存在");
+        }
+
+        // 校验权限：理论上只有 被指派人(assigneeId) 和 管理员(role=1/2) 才能改进度
+        // 为保证严谨，这里校验至少它得是被分配的人，或者你是超级管理员
+        if (!task.getAssigneeId().equals(currentUserId) && UserContext.get().getRole() == 0) {
+            throw new BusinessException(ErrorCode.NO_AUTH_ERROR, "只有任务执行人可以更新进度");
+        }
+
+        int rows = projectTaskMapper.updateTaskStatus(task.getId(), request.getStatus());
+        if (rows <= 0) {
+            throw new BusinessException(ErrorCode.SYSTEM_ERROR, "状态更新失败");
+        }
+    }
+
+    @Override
+    public java.util.List<ProjectTaskVO> listTasksByProjectId(Long projectId) {
+        if (projectId == null) {
+            throw new BusinessException(ErrorCode.PARAMS_ERROR, "项目ID不能为空");
+        }
+        return projectTaskMapper.listTasksWithNamesByProjectId(projectId);
     }
 }

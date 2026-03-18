@@ -30,4 +30,40 @@
         )
     </insert>
 
+    <!-- 根据主键获取任务信息 -->
+    <select id="getTaskById" resultType="com.acha.project.model.entity.ProjectTask">
+        SELECT * FROM project_task WHERE id = #{id} AND del_flag = 0
+    </select>
+
+    <!-- 更新任务状态 -->
+    <update id="updateTaskStatus">
+        UPDATE project_task 
+        SET status = #{status}, update_time = NOW()
+        WHERE id = #{id} AND del_flag = 0
+    </update>
+
+    <!-- 课设亮点核心SQL：关联两张系统用户表，并动态计算是否逾期 -->
+    <select id="listTasksWithNamesByProjectId" resultType="com.acha.project.model.vo.project.task.ProjectTaskVO">
+        SELECT 
+            t.id, 
+            t.project_id AS projectId, 
+            t.task_name AS taskName, 
+            t.task_description AS taskDescription, 
+            t.deadline, 
+            t.status, 
+            t.assigner_id AS assignerId, 
+            t.assignee_id AS assigneeId, 
+            t.create_time AS createTime, 
+            t.update_time AS updateTime,
+            u1.real_name AS assignerName,
+            u2.real_name AS assigneeName,
+            -- 动态计算是否逾期：截止时间小于当前时间，且状态未完成(不等于2) 时为逾期
+            IF(t.deadline <![CDATA[ < ]]> NOW() AND t.status != 2, TRUE, FALSE) AS isOverdue
+        FROM project_task t
+        LEFT JOIN sys_user u1 ON t.assigner_id = u1.id
+        LEFT JOIN sys_user u2 ON t.assignee_id = u2.id
+        WHERE t.project_id = #{projectId} AND t.del_flag = 0
+        ORDER BY t.create_time DESC
+    </select>
+
 </mapper>

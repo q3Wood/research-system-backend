@@ -100,4 +100,39 @@ public class ProjectInfoServiceImpl extends ServiceImpl<ProjectInfoMapper, Proje
         
         projectAuditLogMapper.insertAuditLog(auditLog);
     }
+
+    @Override
+    public com.baomidou.mybatisplus.extension.plugins.pagination.Page<com.acha.project.model.vo.project.ProjectInfoVO> pageProjects(
+            com.acha.project.model.dto.project.info.ProjectQueryRequestDTO request) {
+        
+        // 1. 获取当前登录用户
+        com.acha.project.model.dto.user.LoginUserDTO currentUser = UserContext.get();
+        if (currentUser == null) {
+            throw new BusinessException(ErrorCode.NOT_LOGIN_ERROR);
+        }
+
+        // 2. 取出分页参数
+        long limit = request.getPageSize();
+        long current = request.getCurrent();
+        long offset = (current - 1) * limit;
+
+        Long userId = currentUser.getId();
+        Integer role = currentUser.getRole();
+
+        // 3. 手写SQL统计满足条件的总数
+        long total = projectInfoMapper.countProjects(request, userId, role);
+
+        // 4. 判断是否有数据，有则手写SQL查询记录 (带上了负责人的 real_name)
+        java.util.List<com.acha.project.model.vo.project.ProjectInfoVO> pList = new java.util.ArrayList<>();
+        if (total > 0) {
+            pList = projectInfoMapper.listProjectsByPage(request, userId, role, offset, limit);
+        }
+
+        // 5. 组装并返回带分页的 VO 列表
+        com.baomidou.mybatisplus.extension.plugins.pagination.Page<com.acha.project.model.vo.project.ProjectInfoVO> voPage = 
+            new com.baomidou.mybatisplus.extension.plugins.pagination.Page<>(current, limit, total);
+        voPage.setRecords(pList);
+
+        return voPage;
+    }
 }
