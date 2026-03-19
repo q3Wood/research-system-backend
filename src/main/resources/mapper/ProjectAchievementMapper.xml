@@ -2,23 +2,21 @@
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="com.acha.project.mapper.ProjectAchievementMapper">
 
-    <!-- 校验项目状态与当前用户是否为成员(或负责人) -->
     <select id="checkProjectStatusForMember" resultType="java.lang.Integer">
-        SELECT pi.status 
+        SELECT pi.status
         FROM project_info pi
         WHERE pi.id = #{projectId}
           AND (
-              pi.leader_id = #{userId} 
+              pi.leader_id = #{userId}
               OR EXISTS (
-                  SELECT 1 
-                  FROM project_member pm 
-                  WHERE pm.project_id = #{projectId} 
+                  SELECT 1
+                  FROM project_member pm
+                  WHERE pm.project_id = #{projectId}
                     AND pm.user_id = #{userId}
               )
           )
     </select>
 
-    <!-- 根据成果ID查询对应项目的负责人ID -->
     <select id="getProjectLeaderIdByAchievementId" resultType="java.lang.Long">
         SELECT pi.leader_id
         FROM project_info pi
@@ -26,9 +24,8 @@
         WHERE pa.id = #{achievementId}
     </select>
 
-    <!-- 查询指定项目下的成果列表（带左连接查出姓名，并分页） -->
     <select id="listAchievementsWithSubmitterName" resultType="com.acha.project.model.vo.ProjectAchievementVO">
-        SELECT 
+        SELECT
             pa.id,
             pa.project_id AS projectId,
             pa.submitter_id AS submitterId,
@@ -45,11 +42,21 @@
         LIMIT #{limit} OFFSET #{offset}
     </select>
 
-    <!-- 查询该项目下成果的总数用于分页 -->
     <select id="countAchievements" resultType="java.lang.Long">
         SELECT COUNT(*)
         FROM project_achievement pa
         WHERE pa.project_id = #{projectId} AND pa.is_deleted = 0
+    </select>
+
+    <update id="updateAchievementStatus">
+        UPDATE project_achievement
+        SET status = #{status}, update_time = NOW()
+        WHERE id = #{id} AND is_deleted = 0
+    </update>
+
+    <select id="getAchievementById" resultType="com.acha.project.model.entity.ProjectAchievement">
+        SELECT * FROM project_achievement
+        WHERE id = #{id} AND is_deleted = 0
     </select>
 
 </mapper>

@@ -74,7 +74,7 @@ public class ProjectInfoServiceImpl extends ServiceImpl<ProjectInfoMapper, Proje
         }
 
         // 3. 校验状态流转 (只有 '待审批' 状态的项目才能被审核)
-        if (project.getStatus() != 0) {
+        if (project.getStatus() != 0 && project.getStatus() != 3) {
             throw new BusinessException(ErrorCode.OPERATION_ERROR, "该项目当前状态不可审核");
         }
 

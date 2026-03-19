@@ -14,7 +14,6 @@ import jakarta.annotation.Resource;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
 import org.springframework.web.bind.annotation.*;
-import java.util.List;
 import com.acha.project.model.dto.user.UserQueryRequestDTO;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 

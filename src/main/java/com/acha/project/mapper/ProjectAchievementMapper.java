@@ -39,4 +39,8 @@ public interface ProjectAchievementMapper extends BaseMapper<ProjectAchievement>
      * 查询指定项目下的成果总数
      */
     long countAchievements(@Param("projectId") Long projectId);
+
+    int updateAchievementStatus(@Param("id") Long id, @Param("status") Integer status);
+
+    ProjectAchievement getAchievementById(@Param("id") Long id);
 }

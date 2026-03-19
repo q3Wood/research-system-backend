@@ -15,14 +15,26 @@ import org.springframework.web.bind.annotation.*;
 @Tag(name = "项目管理-经费报销", description = "经费申请、审批、记录查询接口")
 public class ProjectFundController {
 
-    @GetMapping("/test")
-    @Operation(summary = "测试接口")
-    public BaseResponse<String> test() {
-        return BaseResponse.success("ProjectFundController 运行正常");
+    private final com.acha.project.service.ProjectFundRecordService projectFundRecordService;
+
+    public ProjectFundController(com.acha.project.service.ProjectFundRecordService projectFundRecordService) {
+        this.projectFundRecordService = projectFundRecordService;
     }
 
-    // TODO: 1. 成员提交报销申请 (Post)
-    // TODO: 2. 负责人/管理员审批报销 (Post) - 审批通过后会触发自动扣款
+    @PostMapping("/apply")
+    @Operation(summary = "项目成员提交报销申请")
+    public BaseResponse<Long> applyFund(@org.springframework.validation.annotation.Validated @RequestBody com.acha.project.model.dto.project.fund.FundApplyRequestDTO requestDTO) {
+        Long recordId = projectFundRecordService.applyFund(requestDTO);
+        return BaseResponse.success(recordId);
+    }
+
+    @PostMapping("/audit")
+    @Operation(summary = "负责人/管理员审批报销 (通过后触发自动扣款)")
+    public BaseResponse<Boolean> auditFund(@org.springframework.validation.annotation.Validated @RequestBody com.acha.project.model.dto.project.fund.FundAuditRequestDTO requestDTO) {
+        boolean result = projectFundRecordService.auditFund(requestDTO);
+        return BaseResponse.success(result);
+    }
+
     // TODO: 3. 查询项目的所有经费明细 (Get)
     // TODO: 4. 查询”我“的报销申请记录 (Get)
 }

@@ -94,4 +94,13 @@
         LIMIT #{limit} OFFSET #{offset}
     </select>
 
+    <update id="deductProjectBalance">
+        UPDATE project_info
+        SET balance = balance - #{amount}, 
+            update_time = NOW()
+        WHERE id = #{projectId} 
+        AND balance >= #{amount}
+        AND del_flag = 0
+    </update>
+
 </mapper>
