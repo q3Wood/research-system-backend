@@ -28,5 +28,12 @@ public interface ProjectInfoService extends IService<ProjectInfo>{
      */
     com.baomidou.mybatisplus.extension.plugins.pagination.Page<com.acha.project.model.vo.project.ProjectInfoVO> pageProjects(
         com.acha.project.model.dto.project.info.ProjectQueryRequestDTO request);
+
+    /**
+     * 获取单个项目详情
+     * @param id 项目ID
+     * @return 项目详情VO
+     */
+    com.acha.project.model.vo.project.ProjectInfoVO getProjectDetailById(Long id);
 }
 

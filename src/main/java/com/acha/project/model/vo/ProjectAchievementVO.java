@@ -35,6 +35,9 @@ public class ProjectAchievementVO implements Serializable {
     @Schema(description = "验收状态:0-待验收,1-已通过,2-已打回")
     private Integer status;
 
+    @Schema(description = "最新验收意见(从审计流水中查询)")
+    private String auditRemark;
+
     @Schema(description = "提交时间(创建时间)")
     private Date createTime;
 }

@@ -67,4 +67,15 @@ public class ProjectInfoController {
         return BaseResponse.success(projectInfoService.pageProjects(request));
     }
 
+    /**
+     * 根据主键获取科研项目详细信息
+     * @param id 项目的主键ID
+     * @return 项目详细信息VO (含负责人姓名)
+     */
+    @GetMapping("/get")
+    @Operation(summary = "获取单个项目详情", description = "通过ID获取连表查询后的详细项目信息")
+    public BaseResponse<com.acha.project.model.vo.project.ProjectInfoVO> getProjectById(@RequestParam("id") Long id) {
+        return BaseResponse.success(projectInfoService.getProjectDetailById(id));
+    }
+
 }

@@ -20,5 +20,5 @@ public class FundAuditRequestDTO implements Serializable {
     private Integer status;
 
     @Schema(description = "审批意见/驳回理由")
-    private String remark;
+    private String auditRemark;
 }

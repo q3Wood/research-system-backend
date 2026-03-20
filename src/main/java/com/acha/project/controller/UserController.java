@@ -130,7 +130,7 @@ public class UserController {
     }
 
     @PostMapping("/list")
-    @Operation(summary = "分页获取所有用户列表 (管理员)")
+    @Operation(summary = "分页获取所有用户列表", description = "供管理员管理和普通用户组队搜索使用")
     public BaseResponse<Page<UserVO>> listAllUsers(@RequestBody UserQueryRequestDTO request) {
         Page<UserVO> userPage = userService.pageUsers(request);
         return BaseResponse.success(userPage, "分页获取用户列表成功");

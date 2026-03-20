@@ -1,0 +1,57 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.acha.project.mapper.ProjectMemberMapper">
+
+    <!-- 插入或更新成员：如果遇到 user_id & project_id 已存在的主键冲突，说明他之前可能加入过后来被删除了(del_flag=1)，此时直接恢复并更新身份 -->
+    <insert id="insertOrUpdateMember" useGeneratedKeys="true" keyProperty="id">
+        INSERT INTO project_member (
+            project_id, user_id, member_role, del_flag, join_time, update_time
+        ) VALUES (
+            #{projectId}, #{userId}, #{memberRole}, 0, NOW(), NOW()
+        )
+        ON DUPLICATE KEY UPDATE 
+            del_flag = 0,
+            member_role = VALUES(member_role),
+            update_time = NOW()
+    </insert>
+
+    <!-- 查一个成员是不是已经活跃在这个项目里 -->
+    <select id="countActiveMember" resultType="java.lang.Integer">
+        SELECT COUNT(*)
+        FROM project_member
+        WHERE project_id = #{projectId} 
+          AND user_id = #{userId} 
+          AND del_flag = 0
+    </select>
+
+    <!-- 软删除记录出局 -->
+    <update id="removeMember">
+        UPDATE project_member 
+        SET del_flag = 1,
+            update_time = NOW()
+        WHERE project_id = #{projectId} 
+          AND user_id = #{userId} 
+          AND del_flag = 0
+    </update>
+
+    <!-- 查询项目活跃成员列表，关联 sys_user 获取用户详细信息 -->
+    <select id="listMembers" resultType="com.acha.project.model.vo.project.member.ProjectMemberVO">
+        SELECT 
+            pm.id,
+            pm.project_id AS projectId,
+            pm.user_id AS userId,
+            pm.member_role AS memberRole,
+            pm.join_time AS joinTime,
+            u.username,
+            u.real_name AS realName,
+            u.phone,
+            u.email
+        FROM project_member pm
+        LEFT JOIN sys_user u ON pm.user_id = u.id
+        WHERE pm.project_id = #{projectId}
+          AND pm.del_flag = 0
+        ORDER BY pm.join_time ASC
+    </select>
+
+</mapper>

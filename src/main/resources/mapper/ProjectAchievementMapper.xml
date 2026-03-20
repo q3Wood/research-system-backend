@@ -34,10 +34,15 @@
             pa.achievement_type AS achievementType,
             pa.file_url AS fileUrl,
             pa.status,
-            pa.create_time AS createTime
+            pa.create_time AS createTime,
+            (SELECT remark 
+             FROM project_audit_log 
+             WHERE module_type = 3 AND business_id = pa.id 
+             ORDER BY create_time DESC 
+             LIMIT 1) AS auditRemark
         FROM project_achievement pa
         LEFT JOIN sys_user u ON pa.submitter_id = u.id
-        WHERE pa.project_id = #{projectId} AND pa.is_deleted = 0
+        WHERE pa.project_id = #{projectId} AND pa.del_flag = 0
         ORDER BY pa.create_time DESC
         LIMIT #{limit} OFFSET #{offset}
     </select>
@@ -45,18 +50,18 @@
     <select id="countAchievements" resultType="java.lang.Long">
         SELECT COUNT(*)
         FROM project_achievement pa
-        WHERE pa.project_id = #{projectId} AND pa.is_deleted = 0
+        WHERE pa.project_id = #{projectId} AND pa.del_flag = 0
     </select>
 
     <update id="updateAchievementStatus">
         UPDATE project_achievement
         SET status = #{status}, update_time = NOW()
-        WHERE id = #{id} AND is_deleted = 0
+        WHERE id = #{id} AND del_flag = 0
     </update>
 
     <select id="getAchievementById" resultType="com.acha.project.model.entity.ProjectAchievement">
         SELECT * FROM project_achievement
-        WHERE id = #{id} AND is_deleted = 0
+        WHERE id = #{id} AND del_flag = 0
     </select>
 
 </mapper>

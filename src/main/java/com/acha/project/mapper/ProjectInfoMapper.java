@@ -10,6 +10,8 @@ public interface ProjectInfoMapper extends BaseMapper<ProjectInfo> {
 
     ProjectInfo getProjectById(@Param("id") Long id);
 
+    com.acha.project.model.vo.project.ProjectInfoVO getProjectVOById(@Param("id") Long id);
+
     int updateProjectStatus(@Param("id") Long id, @Param("status") Integer status);
 
     long countProjects(@Param("requestDTO") com.acha.project.model.dto.project.info.ProjectQueryRequestDTO requestDTO,

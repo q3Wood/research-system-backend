@@ -14,4 +14,7 @@ public class ProjectQueryRequestDTO extends PageRequest {
 
     @Schema(description = "项目状态:0-申报待审,1-执行中,2-已结题,3-已驳回(可选)")
     private Integer status;
+
+    @Schema(description = "项目负责人ID(用于查询某个人创建的所有项目)(可选)")
+    private Long leaderId;
 }

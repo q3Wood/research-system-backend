@@ -23,4 +23,13 @@ public interface ProjectFundRecordService extends IService<ProjectFundRecord> {
      * @return 成功与否
      */
     boolean auditFund(com.acha.project.model.dto.project.fund.FundAuditRequestDTO requestDTO);
+
+    /**
+     * 分页查询项目经费申请记录
+     * @param projectId 项目ID
+     * @param requestDTO 查询参数
+     * @return 分页结果
+     */
+    com.baomidou.mybatisplus.extension.plugins.pagination.Page<com.acha.project.model.vo.project.fund.FundVO> pageFunds(
+            Long projectId, com.acha.project.model.dto.project.fund.FundQueryRequestDTO requestDTO);
 }

@@ -129,9 +129,30 @@ public class ProjectFundRecordServiceImpl extends ServiceImpl<ProjectFundRecordM
         auditLog.setBusinessId(recordId);
         auditLog.setOperatorId(currentUserId);
         auditLog.setAction(auditStatus == 1 ? "经费审批通过" : "经费审批驳回");
-        auditLog.setRemark(requestDTO.getRemark());
+        auditLog.setRemark(requestDTO.getAuditRemark());
         projectAuditLogMapper.insertAuditLog(auditLog);
 
         return true;
+    }
+
+    @Override
+    public com.baomidou.mybatisplus.extension.plugins.pagination.Page<com.acha.project.model.vo.project.fund.FundVO> pageFunds(
+            Long projectId, com.acha.project.model.dto.project.fund.FundQueryRequestDTO requestDTO) {
+        
+        long limit = requestDTO.getPageSize();
+        long current = requestDTO.getCurrent();
+        long offset = (current - 1) * limit;
+
+        long total = this.baseMapper.countFunds(projectId, requestDTO);
+        java.util.List<com.acha.project.model.vo.project.fund.FundVO> records;
+        if (total > 0) {
+            records = this.baseMapper.listFundsByPage(projectId, offset, limit, requestDTO);
+        } else {
+            records = java.util.Collections.emptyList();
+        }
+
+        com.baomidou.mybatisplus.extension.plugins.pagination.Page<com.acha.project.model.vo.project.fund.FundVO> page = new com.baomidou.mybatisplus.extension.plugins.pagination.Page<>(current, limit, total);
+        page.setRecords(records);
+        return page;
     }
 }

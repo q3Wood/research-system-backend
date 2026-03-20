@@ -28,6 +28,9 @@ public class ProjectInfoServiceImpl extends ServiceImpl<ProjectInfoMapper, Proje
     @Resource
     private ProjectAuditLogMapper projectAuditLogMapper;
 
+    @Resource
+    private com.acha.project.mapper.ProjectMemberMapper projectMemberMapper;
+
     @Override
     @Transactional(rollbackFor = Exception.class)
     public void addProject(String projectName, String description, java.math.BigDecimal budget) {
@@ -87,6 +90,17 @@ public class ProjectInfoServiceImpl extends ServiceImpl<ProjectInfoMapper, Proje
         // 5. 更新项目状态
         projectInfoMapper.updateProjectStatus(project.getId(), newStatus);
         
+        // 5.5 如果审核通过，自动将项目负责人加入到项目成员表
+        if (newStatus == 1) {
+            com.acha.project.model.entity.ProjectMember member = new com.acha.project.model.entity.ProjectMember();
+            member.setProjectId(project.getId());
+            member.setUserId(project.getLeaderId());
+            member.setMemberRole("项目负责人"); // 设置角色名称
+            member.setJoinTime(new java.util.Date()); // 设置加入时间
+            // 当需要恢复已退出的成员时，insertOrUpdateMember 中会对 del_flag 和 member_role 进行更新，因此不需要显式设置 delFlag=0（Mapper的SQL层会强制设为0）
+            projectMemberMapper.insertOrUpdateMember(member);
+        }
+
         // 6. 记录审核日志
         ProjectAuditLog auditLog = new ProjectAuditLog();
         auditLog.setProjectId(project.getId());
@@ -134,5 +148,17 @@ public class ProjectInfoServiceImpl extends ServiceImpl<ProjectInfoMapper, Proje
         voPage.setRecords(pList);
 
         return voPage;
+    }
+
+    @Override
+    public com.acha.project.model.vo.project.ProjectInfoVO getProjectDetailById(Long id) {
+        if (id == null || id <= 0) {
+            throw new BusinessException(ErrorCode.PARAMS_ERROR, "非法的项目ID");
+        }
+        com.acha.project.model.vo.project.ProjectInfoVO vo = projectInfoMapper.getProjectVOById(id);
+        if (vo == null) {
+            throw new BusinessException(ErrorCode.NOT_FOUND_ERROR, "项目不存在或已被删除");
+        }
+        return vo;
     }
 }

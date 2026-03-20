@@ -3,7 +3,7 @@
         "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="com.acha.project.mapper.ProjectFundRecordMapper">
 
-    <insert id="insertFundRecord" useGeneratedKeys="true" keyProperty="id">
+    <insert id="insertFundRecord" useGeneratedKeys="true" keyProperty="id">     
         INSERT INTO project_fund_record (
             project_id, applicant_id, amount, usage_desc, status, del_flag, create_time, update_time
         ) VALUES (
@@ -22,11 +22,60 @@
         WHERE id = #{id} AND del_flag = 0
     </update>
 
-    <select id="getProjectLeaderIdByFundId" resultType="java.lang.Long">
+    <select id="getProjectLeaderIdByFundId" resultType="java.lang.Long">        
         SELECT pi.leader_id
         FROM project_info pi
         INNER JOIN project_fund_record pf ON pi.id = pf.project_id
         WHERE pf.id = #{fundId} AND pf.del_flag = 0
+    </select>
+
+    <select id="countFunds" resultType="java.lang.Long">
+        SELECT COUNT(*)
+        FROM project_fund_record f
+        WHERE f.project_id = #{projectId} AND f.del_flag = 0
+        <if test="requestDTO != null and requestDTO.status != null">
+            AND f.status = #{requestDTO.status}
+        </if>
+    </select>
+
+    <select id="listFundsByPage" resultType="com.acha.project.model.vo.project.fund.FundVO">
+        SELECT 
+            f.id,
+            f.project_id AS projectId,
+            f.usage_desc AS usageDesc,
+            f.amount,
+            f.applicant_id AS applicantId,
+            f.status,
+            f.create_time AS createTime,
+            u.real_name AS applicantName,
+            (SELECT remark FROM project_audit_log al WHERE al.business_id = f.id AND al.module_type = 2 AND al.action != '提交报销申请' ORDER BY al.create_time DESC LIMIT 1) AS auditRemark
+        FROM project_fund_record f
+        LEFT JOIN sys_user u ON f.applicant_id = u.id
+        WHERE f.project_id = #{projectId} AND f.del_flag = 0
+        <if test="requestDTO != null and requestDTO.status != null">
+            AND f.status = #{requestDTO.status}
+        </if>
+        ORDER BY 
+        <choose>
+            <when test="requestDTO != null and requestDTO.sortField == 'amount'">
+                f.amount
+            </when>
+            <when test="requestDTO != null and requestDTO.sortField == 'createTime'">
+                f.create_time
+            </when>
+            <otherwise>
+                f.create_time
+            </otherwise>
+        </choose>
+        <choose>
+            <when test="requestDTO != null and requestDTO.sortOrder == 'ascend'">
+                ASC
+            </when>
+            <otherwise>
+                DESC
+            </otherwise>
+        </choose>
+        LIMIT #{limit} OFFSET #{offset}
     </select>
 
 </mapper>

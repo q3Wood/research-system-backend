@@ -306,10 +306,10 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
 
     @Override
     public Page<UserVO> pageUsers(UserQueryRequestDTO request) {
-        // 1. 权限校验
+        // 1. 权限校验：只要登录就可以查看(因为普通科研人员需要搜索其他人拉入项目组)
         LoginUserDTO currentUser = UserContext.get();
-        if (currentUser == null || currentUser.getRole() == 0) {
-            throw new BusinessException(ErrorCode.NO_AUTH_ERROR, "无权查看用户列表");
+        if (currentUser == null) {
+            throw new BusinessException(ErrorCode.NOT_LOGIN_ERROR, "请先登录");
         }
 
         // 2. 取出分页参数

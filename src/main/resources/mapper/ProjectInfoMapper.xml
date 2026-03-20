@@ -34,6 +34,24 @@
         WHERE id = #{id} AND del_flag = 0
     </select>
 
+    <!-- 根据主键查询项目并转换成 VO（连表查询负责人姓名） -->
+    <select id="getProjectVOById" resultType="com.acha.project.model.vo.project.ProjectInfoVO">
+        SELECT 
+            p.id, 
+            p.project_name AS projectName, 
+            p.description, 
+            p.budget, 
+            p.balance, 
+            p.status, 
+            p.leader_id AS leaderId, 
+            p.create_time AS createTime, 
+            p.update_time AS updateTime,
+            u.real_name AS leaderName
+        FROM project_info p
+        LEFT JOIN sys_user u ON p.leader_id = u.id
+        WHERE p.id = #{id} AND p.del_flag = 0
+    </select>
+
     <!-- 更新项目状态 -->
     <update id="updateProjectStatus">
         UPDATE project_info
@@ -46,9 +64,12 @@
         SELECT COUNT(*)
         FROM project_info p
         WHERE p.del_flag = 0
-        <!-- 如果是普通用户(0)，只能查询自己负责的 -->
+        <!-- 如果是普通用户(0)，只能查询自己负责的和自己参与的 -->
         <if test="role == 0">
-            AND p.leader_id = #{userId}
+            AND (p.leader_id = #{userId} OR EXISTS (
+                SELECT 1 FROM project_member pm 
+                WHERE pm.project_id = p.id AND pm.user_id = #{userId} AND pm.del_flag = 0
+            ))
         </if>
         <!-- 动态查询条件 -->
         <if test="requestDTO != null">
@@ -57,6 +78,9 @@
             </if>
             <if test="requestDTO.status != null">
                 AND p.status = #{requestDTO.status}
+            </if>
+            <if test="requestDTO.leaderId != null and role != 0">
+                AND p.leader_id = #{requestDTO.leaderId}
             </if>
         </if>
     </select>
@@ -77,9 +101,12 @@
         FROM project_info p
         LEFT JOIN sys_user u ON p.leader_id = u.id
         WHERE p.del_flag = 0
-        <!-- 如果是普通用户(0)，只能查询自己负责的 -->
+        <!-- 如果是普通用户(0)，只能查询自己负责的和自己参与的 -->
         <if test="role == 0">
-            AND p.leader_id = #{userId}
+            AND (p.leader_id = #{userId} OR EXISTS (
+                SELECT 1 FROM project_member pm 
+                WHERE pm.project_id = p.id AND pm.user_id = #{userId} AND pm.del_flag = 0
+            ))
         </if>
         <!-- 动态查询条件 -->
         <if test="requestDTO != null">
@@ -89,8 +116,40 @@
             <if test="requestDTO.status != null">
                 AND p.status = #{requestDTO.status}
             </if>
+            <if test="requestDTO.leaderId != null and role != 0">
+                AND p.leader_id = #{requestDTO.leaderId}
+            </if>
         </if>
-        ORDER BY p.create_time DESC
+        ORDER BY 
+        <choose>
+            <when test="requestDTO != null and requestDTO.sortField == 'budget'">
+                p.budget
+            </when>
+            <when test="requestDTO != null and requestDTO.sortField == 'balance'">
+                p.balance
+            </when>
+            <when test="requestDTO != null and requestDTO.sortField == 'create_time'">
+                p.create_time
+            </when>
+            <when test="requestDTO != null and requestDTO.sortField == 'update_time'">
+                p.update_time
+            </when>
+            <when test="requestDTO != null and requestDTO.sortField == 'status'">
+                p.status
+            </when>
+            <!-- 默认排序规则 -->
+            <otherwise>
+                p.create_time
+            </otherwise>
+        </choose>
+        <choose>
+            <when test="requestDTO != null and requestDTO.sortOrder == 'descend'">
+                DESC
+            </when>
+            <otherwise>
+                ASC
+            </otherwise>
+        </choose>
         LIMIT #{limit} OFFSET #{offset}
     </select>
 

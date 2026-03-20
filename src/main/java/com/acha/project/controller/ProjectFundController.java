@@ -35,6 +35,15 @@ public class ProjectFundController {
         return BaseResponse.success(result);
     }
 
-    // TODO: 3. 查询项目的所有经费明细 (Get)
+    @PostMapping("/list/page/{projectId}")
+    @Operation(summary = "分页查询项目所有经费申请")
+    public BaseResponse<com.baomidou.mybatisplus.extension.plugins.pagination.Page<com.acha.project.model.vo.project.fund.FundVO>> pageFundRecords(
+            @PathVariable("projectId") Long projectId,
+            @RequestBody com.acha.project.model.dto.project.fund.FundQueryRequestDTO requestDTO) {
+        com.baomidou.mybatisplus.extension.plugins.pagination.Page<com.acha.project.model.vo.project.fund.FundVO> page = 
+                projectFundRecordService.pageFunds(projectId, requestDTO);
+        return BaseResponse.success(page);
+    }
+
     // TODO: 4. 查询”我“的报销申请记录 (Get)
 }
