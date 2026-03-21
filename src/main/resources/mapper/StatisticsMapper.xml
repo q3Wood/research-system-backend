@@ -1,0 +1,130 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.acha.project.mapper.StatisticsMapper">
+
+    <select id="getOverviewStatistic" resultType="com.acha.project.model.vo.statistics.OverviewVO">
+        SELECT
+            (SELECT COUNT(*) FROM project_info WHERE del_flag = 0
+            <if test="dto.startDate != null and dto.startDate != ''">
+                AND create_time >= #{dto.startDate}
+            </if>
+            <if test="dto.endDate != null and dto.endDate != ''">
+                AND create_time &lt;= CONCAT(#{dto.endDate}, ' 23:59:59')
+            </if>
+            ) AS projectTotal,
+            (SELECT COUNT(*) FROM project_info WHERE del_flag = 0 AND status = 0
+            <if test="dto.startDate != null and dto.startDate != ''">
+                AND create_time >= #{dto.startDate}
+            </if>
+            <if test="dto.endDate != null and dto.endDate != ''">
+                AND create_time &lt;= CONCAT(#{dto.endDate}, ' 23:59:59')
+            </if>
+            ) AS projectPending,
+            (SELECT COUNT(*) FROM project_info WHERE del_flag = 0 AND status = 1
+            <if test="dto.startDate != null and dto.startDate != ''">
+                AND create_time >= #{dto.startDate}
+            </if>
+            <if test="dto.endDate != null and dto.endDate != ''">
+                AND create_time &lt;= CONCAT(#{dto.endDate}, ' 23:59:59')
+            </if>
+            ) AS projectRunning,
+            (SELECT COUNT(*) FROM project_info WHERE del_flag = 0 AND status = 2
+            <if test="dto.startDate != null and dto.startDate != ''">
+                AND create_time >= #{dto.startDate}
+            </if>
+            <if test="dto.endDate != null and dto.endDate != ''">
+                AND create_time &lt;= CONCAT(#{dto.endDate}, ' 23:59:59')
+            </if>
+            ) AS projectClosed,
+            (SELECT COUNT(*) FROM sys_user WHERE del_flag = 0
+            <if test="dto.startDate != null and dto.startDate != ''">
+                AND create_time >= #{dto.startDate}
+            </if>
+            <if test="dto.endDate != null and dto.endDate != ''">
+                AND create_time &lt;= CONCAT(#{dto.endDate}, ' 23:59:59')
+            </if>
+            ) AS userTotal,
+            (SELECT COUNT(*) FROM project_fund_record WHERE del_flag = 0 AND status = 0
+            <if test="dto.startDate != null and dto.startDate != ''">
+                AND create_time >= #{dto.startDate}
+            </if>
+            <if test="dto.endDate != null and dto.endDate != ''">
+                AND create_time &lt;= CONCAT(#{dto.endDate}, ' 23:59:59')
+            </if>
+            ) AS fundPendingCount,
+            IFNULL((SELECT SUM(amount) FROM project_fund_record WHERE del_flag = 0 AND status = 0
+            <if test="dto.startDate != null and dto.startDate != ''">
+                AND create_time >= #{dto.startDate}
+            </if>
+            <if test="dto.endDate != null and dto.endDate != ''">
+                AND create_time &lt;= CONCAT(#{dto.endDate}, ' 23:59:59')
+            </if>
+            ), 0) AS fundPendingAmount,
+            IFNULL((SELECT SUM(amount) FROM project_fund_record WHERE del_flag = 0 AND status = 1
+            <if test="dto.startDate != null and dto.startDate != ''">
+                AND create_time >= #{dto.startDate}
+            </if>
+            <if test="dto.endDate != null and dto.endDate != ''">
+                AND create_time &lt;= CONCAT(#{dto.endDate}, ' 23:59:59')
+            </if>
+            ), 0) AS fundApprovedAmount,
+            (SELECT COUNT(*) FROM project_achievement WHERE del_flag = 0
+            <if test="dto.startDate != null and dto.startDate != ''">
+                AND create_time >= #{dto.startDate}
+            </if>
+            <if test="dto.endDate != null and dto.endDate != ''">
+                AND create_time &lt;= CONCAT(#{dto.endDate}, ' 23:59:59')
+            </if>
+            ) AS achievementTotal,
+            (SELECT COUNT(*) FROM project_achievement WHERE del_flag = 0 AND status = 0
+            <if test="dto.startDate != null and dto.startDate != ''">
+                AND create_time >= #{dto.startDate}
+            </if>
+            <if test="dto.endDate != null and dto.endDate != ''">
+                AND create_time &lt;= CONCAT(#{dto.endDate}, ' 23:59:59')
+            </if>
+            ) AS achievementPendingCount
+    </select>
+
+    <select id="getFundTrend" resultType="com.acha.project.model.vo.statistics.FundTrendVO">
+        SELECT
+            DATE_FORMAT(create_time, '%Y-%m-%d') AS date,
+            SUM(CASE WHEN status = 0 THEN 1 ELSE 0 END) AS pendingCount,
+            SUM(CASE WHEN status = 1 THEN 1 ELSE 0 END) AS approvedCount,
+            IFNULL(SUM(CASE WHEN status = 0 THEN amount ELSE 0 END), 0) AS pendingAmount,
+            IFNULL(SUM(CASE WHEN status = 1 THEN amount ELSE 0 END), 0) AS approvedAmount
+        FROM project_fund_record
+        WHERE del_flag = 0
+        <if test="dto.startDate != null and dto.startDate != ''">
+            AND create_time >= #{dto.startDate}
+        </if>
+        <if test="dto.endDate != null and dto.endDate != ''">
+            AND create_time &lt;= CONCAT(#{dto.endDate}, ' 23:59:59')
+        </if>
+        GROUP BY
+            DATE_FORMAT(create_time, '%Y-%m-%d')
+        ORDER BY date ASC
+    </select>
+
+    <select id="getAchievementTrend" resultType="com.acha.project.model.vo.statistics.AchievementTrendVO">
+        SELECT
+            DATE_FORMAT(create_time, '%Y-%m-%d') AS date,
+            COUNT(*) AS submitCount,
+            SUM(CASE WHEN status = 0 THEN 1 ELSE 0 END) AS pendingCount,
+            SUM(CASE WHEN status = 1 THEN 1 ELSE 0 END) AS approvedCount,
+            SUM(CASE WHEN status = 2 THEN 1 ELSE 0 END) AS rejectedCount
+        FROM project_achievement
+        WHERE del_flag = 0
+        <if test="dto.startDate != null and dto.startDate != ''">
+            AND create_time >= #{dto.startDate}
+        </if>
+        <if test="dto.endDate != null and dto.endDate != ''">
+            AND create_time &lt;= CONCAT(#{dto.endDate}, ' 23:59:59')
+        </if>
+        GROUP BY
+            DATE_FORMAT(create_time, '%Y-%m-%d')
+        ORDER BY date ASC
+    </select>
+
+</mapper>

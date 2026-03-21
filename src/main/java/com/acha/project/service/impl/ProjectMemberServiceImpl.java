@@ -57,8 +57,11 @@ public class ProjectMemberServiceImpl extends ServiceImpl<ProjectMemberMapper, P
         if (activeCount > 0) {
             throw new BusinessException(ErrorCode.OPERATION_ERROR, "该科研人员已存在本团队中，无需重复添加");
         }
-
-        // 5. 构造实体并调用手写的大招 SQL 插入
+        // 5. 检查该项目是否已审评通过（假设只有执行中的项目才能添加成员）
+        if (projectInfo.getStatus() != 1) { // 假设 1-执行中
+            throw new BusinessException(ErrorCode.OPERATION_ERROR, "只有执行中的项目才能添加成员");
+        }
+        // 6. 构造实体并调用手写的大招 SQL 插入
         ProjectMember member = new ProjectMember();
         member.setProjectId(projectId);
         member.setUserId(userIdToAdd);
