@@ -15,7 +15,7 @@ CREATE TABLE `project_info` (
   `description` TEXT COMMENT '项目简介',
   `budget` DECIMAL(10,2) NOT NULL DEFAULT '0.00' COMMENT '项目总预算(元) - 初始核定金额',
   `balance` DECIMAL(10,2) NOT NULL DEFAULT '0.00' COMMENT '可用余额(元) - 随报销动态递减',
-  `status` TINYINT NOT NULL DEFAULT 0 COMMENT '状态:0-申报待审,1-执行中,2-已结题,3-已驳回',
+  `status` TINYINT NOT NULL DEFAULT 0 COMMENT '状态:0-待审,1-通过(执行中),2-驳回,3-已结题',
   `leader_id` BIGINT NOT NULL COMMENT '项目负责人ID',
   `del_flag` TINYINT NOT NULL DEFAULT 0 COMMENT '逻辑删除标志：0-正常，1-已删除',
   `create_time` DATETIME DEFAULT CURRENT_TIMESTAMP COMMENT '申报时间',

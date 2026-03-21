@@ -59,6 +59,28 @@
         WHERE id = #{id} AND del_flag = 0
     </update>
 
+    <update id="resubmitProject">
+        UPDATE project_info
+        SET project_name = #{projectName},
+            description = #{description},
+            budget = #{budget},
+            balance = #{budget},
+            status = 0,
+            update_time = NOW()
+        WHERE id = #{projectId}
+                    AND status = 2
+          AND del_flag = 0
+    </update>
+
+    <update id="logicalDeleteProject">
+        UPDATE project_info
+        SET del_flag = 1,
+            update_time = NOW()
+        WHERE id = #{projectId}
+          AND del_flag = 0
+          AND status IN (0, 2)
+    </update>
+
     <!-- 手写分页：统计项目总数（带权限控制与模糊查询） -->
     <select id="countProjects" resultType="java.lang.Long">
         SELECT COUNT(*)

@@ -1,7 +1,10 @@
 package com.acha.project.service;
 
 import com.acha.project.model.dto.project.info.ProjectAuditRequestDTO;
+import com.acha.project.model.dto.project.info.ProjectDeleteRequestDTO;
+import com.acha.project.model.dto.project.info.ProjectResubmitRequestDTO;
 import com.acha.project.model.entity.ProjectInfo;
+import com.acha.project.model.vo.project.ProjectResubmitVO;
 import com.baomidou.mybatisplus.extension.service.IService;
 
 public interface ProjectInfoService extends IService<ProjectInfo>{
@@ -35,5 +38,15 @@ public interface ProjectInfoService extends IService<ProjectInfo>{
      * @return 项目详情VO
      */
     com.acha.project.model.vo.project.ProjectInfoVO getProjectDetailById(Long id);
+
+    /**
+     * 删除项目（逻辑删除）
+     */
+    boolean deleteProject(ProjectDeleteRequestDTO request);
+
+    /**
+     * 项目驳回后修改重提（更新原记录）
+     */
+    ProjectResubmitVO resubmitProject(ProjectResubmitRequestDTO request);
 }
 

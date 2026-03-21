@@ -29,7 +29,7 @@
                 AND create_time &lt;= CONCAT(#{dto.endDate}, ' 23:59:59')
             </if>
             ) AS projectRunning,
-            (SELECT COUNT(*) FROM project_info WHERE del_flag = 0 AND status = 2
+            (SELECT COUNT(*) FROM project_info WHERE del_flag = 0 AND status = 3
             <if test="dto.startDate != null and dto.startDate != ''">
                 AND create_time >= #{dto.startDate}
             </if>

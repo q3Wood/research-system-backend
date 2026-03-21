@@ -3,6 +3,9 @@ package com.acha.project.controller;
 import com.acha.project.common.BaseResponse;
 import com.acha.project.model.dto.project.info.ProjectAddRequestDTO;
 import com.acha.project.model.dto.project.info.ProjectAuditRequestDTO;
+import com.acha.project.model.dto.project.info.ProjectDeleteRequestDTO;
+import com.acha.project.model.dto.project.info.ProjectResubmitRequestDTO;
+import com.acha.project.model.vo.project.ProjectResubmitVO;
 import com.acha.project.service.ProjectInfoService;
 
 import io.swagger.v3.oas.annotations.Operation;
@@ -49,10 +52,30 @@ public class ProjectInfoController {
      * @return 审核结果
      */
     @PostMapping("/audit")
-    @Operation(summary = "项目审核", description = "管理员审批项目：通过(1) 或 驳回(3)")
+    @Operation(summary = "项目审核", description = "管理员审批项目：通过(1) 或 驳回(2)")
     public BaseResponse<String> auditProject(@RequestBody @Valid ProjectAuditRequestDTO request) {
         projectInfoService.auditProject(request);
         return BaseResponse.success("审核操作成功");
+    }
+
+    /**
+     * 删除项目（逻辑删除）
+     */
+    @PostMapping("/delete")
+    @Operation(summary = "删除项目", description = "仅负责人或管理员可删除，且仅允许删除待审(0)或驳回(2)项目")
+    public BaseResponse<Boolean> deleteProject(@RequestBody @Valid ProjectDeleteRequestDTO request) {
+        boolean result = projectInfoService.deleteProject(request);
+        return BaseResponse.success(result);
+    }
+
+    /**
+     * 修改后重提（更新原项目，不新建ID）
+     */
+    @PostMapping("/resubmit")
+    @Operation(summary = "项目修改后重提", description = "仅负责人或管理员可将驳回项目重提为待审")
+    public BaseResponse<ProjectResubmitVO> resubmitProject(@RequestBody @Valid ProjectResubmitRequestDTO request) {
+        ProjectResubmitVO result = projectInfoService.resubmitProject(request);
+        return BaseResponse.success(result, "重提成功");
     }
 
     /**

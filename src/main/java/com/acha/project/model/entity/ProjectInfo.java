@@ -35,7 +35,7 @@ public class ProjectInfo implements Serializable {
     @TableField("balance")
     private BigDecimal balance;
 
-    @Schema(description = "状态:0-申报待审,1-执行中,2-已结题,3-已驳回")
+    @Schema(description = "状态:0-待审,1-通过(执行中),2-驳回,3-已结题")
     @TableField("status")
     private Integer status;
 

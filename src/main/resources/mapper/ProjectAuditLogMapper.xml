@@ -24,4 +24,84 @@
         )
     </insert>
 
+    <select id="countAuditLogs" resultType="java.lang.Long">
+        SELECT COUNT(*)
+        FROM project_audit_log al
+        WHERE al.project_id = #{projectId}
+          AND al.module_type = #{moduleType}
+        <if test="onlySelfRelated">
+            AND (
+                al.operator_id = #{currentUserId}
+                OR (al.module_type = 1 AND EXISTS (
+                    SELECT 1
+                    FROM project_info pi
+                    WHERE pi.id = al.business_id
+                      AND pi.del_flag = 0
+                      AND pi.leader_id = #{currentUserId}
+                ))
+                OR (al.module_type = 2 AND EXISTS (
+                    SELECT 1
+                    FROM project_fund_record fr
+                    WHERE fr.id = al.business_id
+                      AND fr.del_flag = 0
+                      AND fr.applicant_id = #{currentUserId}
+                ))
+                OR (al.module_type = 3 AND EXISTS (
+                    SELECT 1
+                    FROM project_achievement pa
+                    WHERE pa.id = al.business_id
+                      AND pa.del_flag = 0
+                      AND pa.submitter_id = #{currentUserId}
+                ))
+            )
+        </if>
+    </select>
+
+    <select id="listAuditLogsByPage" resultType="com.acha.project.model.vo.project.audit.ProjectAuditLogVO">
+        SELECT
+            al.action,
+            CASE
+                WHEN al.action LIKE '%通过%' THEN 1
+                WHEN al.action LIKE '%驳回%' OR al.action LIKE '%打回%' THEN 2
+                WHEN al.action LIKE '%提交%' OR al.action LIKE '%申请%' THEN 0
+                ELSE NULL
+            END AS auditStatus,
+            al.remark,
+            u.real_name AS operatorName,
+            al.create_time AS createTime,
+            al.business_id AS businessId
+        FROM project_audit_log al
+        LEFT JOIN sys_user u ON al.operator_id = u.id
+        WHERE al.project_id = #{projectId}
+          AND al.module_type = #{moduleType}
+        <if test="onlySelfRelated">
+            AND (
+                al.operator_id = #{currentUserId}
+                OR (al.module_type = 1 AND EXISTS (
+                    SELECT 1
+                    FROM project_info pi
+                    WHERE pi.id = al.business_id
+                      AND pi.del_flag = 0
+                      AND pi.leader_id = #{currentUserId}
+                ))
+                OR (al.module_type = 2 AND EXISTS (
+                    SELECT 1
+                    FROM project_fund_record fr
+                    WHERE fr.id = al.business_id
+                      AND fr.del_flag = 0
+                      AND fr.applicant_id = #{currentUserId}
+                ))
+                OR (al.module_type = 3 AND EXISTS (
+                    SELECT 1
+                    FROM project_achievement pa
+                    WHERE pa.id = al.business_id
+                      AND pa.del_flag = 0
+                      AND pa.submitter_id = #{currentUserId}
+                ))
+            )
+        </if>
+        ORDER BY al.create_time DESC, al.id DESC
+        LIMIT #{limit} OFFSET #{offset}
+    </select>
+
 </mapper>

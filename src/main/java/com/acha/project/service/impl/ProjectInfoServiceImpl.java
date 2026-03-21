@@ -12,7 +12,10 @@ import com.acha.project.mapper.ProjectInfoMapper;
 import com.acha.project.service.ProjectInfoService;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.acha.project.model.dto.project.info.ProjectAuditRequestDTO;
+import com.acha.project.model.dto.project.info.ProjectDeleteRequestDTO;
+import com.acha.project.model.dto.project.info.ProjectResubmitRequestDTO;
 import com.acha.project.mapper.ProjectAuditLogMapper;
+import com.acha.project.model.vo.project.ProjectResubmitVO;
 
 import jakarta.annotation.Resource;
 import lombok.extern.slf4j.Slf4j;
@@ -77,14 +80,14 @@ public class ProjectInfoServiceImpl extends ServiceImpl<ProjectInfoMapper, Proje
         }
 
         // 3. 校验状态流转 (只有 '待审批' 状态的项目才能被审核)
-        if (project.getStatus() != 0 && project.getStatus() != 3) {
+        if (project.getStatus() != 0 && project.getStatus() != 2) {
             throw new BusinessException(ErrorCode.OPERATION_ERROR, "该项目当前状态不可审核");
         }
 
         // 4. 校验审核结果状态 (校验参数合法性)
         Integer newStatus = request.getAuditStatus();
-        if (newStatus != 1 && newStatus != 3) {
-            throw new BusinessException(ErrorCode.PARAMS_ERROR, "审核状态不合法，仅支持通过(1)或驳回(3)");
+        if (newStatus != 1 && newStatus != 2) {
+            throw new BusinessException(ErrorCode.PARAMS_ERROR, "审核状态不合法，仅支持通过(1)或驳回(2)");
         }
 
         // 5. 更新项目状态
@@ -159,6 +162,106 @@ public class ProjectInfoServiceImpl extends ServiceImpl<ProjectInfoMapper, Proje
         if (vo == null) {
             throw new BusinessException(ErrorCode.NOT_FOUND_ERROR, "项目不存在或已被删除");
         }
+        return vo;
+    }
+
+    @Override
+    @Transactional(rollbackFor = Exception.class)
+    public boolean deleteProject(ProjectDeleteRequestDTO request) {
+        if (request == null || request.getProjectId() == null) {
+            throw new BusinessException(ErrorCode.PARAMS_ERROR, "请求参数不能为空");
+        }
+        if (UserContext.get() == null || UserContext.get().getId() == null) {
+            throw new BusinessException(ErrorCode.NOT_LOGIN_ERROR);
+        }
+
+        Long currentUserId = UserContext.get().getId();
+        Integer role = UserContext.get().getRole();
+        boolean isAdmin = role != null && role >= 1;
+
+        ProjectInfo project = projectInfoMapper.getProjectById(request.getProjectId());
+        if (project == null) {
+            throw new BusinessException(ErrorCode.NOT_FOUND_ERROR, "项目不存在");
+        }
+
+        boolean isLeader = currentUserId.equals(project.getLeaderId());
+        if (!isAdmin && !isLeader) {
+            throw new BusinessException(ErrorCode.NO_AUTH_ERROR, "仅项目负责人或管理员可删除项目");
+        }
+
+        Integer status = project.getStatus();
+        if (!Integer.valueOf(0).equals(status) && !Integer.valueOf(2).equals(status)) {
+            throw new BusinessException(ErrorCode.OPERATION_ERROR, "仅待审或驳回状态的项目可删除");
+        }
+
+        int rows = projectInfoMapper.logicalDeleteProject(project.getId());
+        if (rows <= 0) {
+            throw new BusinessException(ErrorCode.OPERATION_ERROR, "项目删除失败，请稍后重试");
+        }
+
+        ProjectAuditLog auditLog = new ProjectAuditLog();
+        auditLog.setProjectId(project.getId());
+        auditLog.setModuleType(1);
+        auditLog.setBusinessId(project.getId());
+        auditLog.setOperatorId(currentUserId);
+        auditLog.setAction("项目删除");
+        auditLog.setRemark(request.getDeleteReason());
+        projectAuditLogMapper.insertAuditLog(auditLog);
+
+        return true;
+    }
+
+    @Override
+    @Transactional(rollbackFor = Exception.class)
+    public ProjectResubmitVO resubmitProject(ProjectResubmitRequestDTO request) {
+        if (request == null) {
+            throw new BusinessException(ErrorCode.PARAMS_ERROR, "请求参数不能为空");
+        }
+        if (UserContext.get() == null || UserContext.get().getId() == null) {
+            throw new BusinessException(ErrorCode.NOT_LOGIN_ERROR);
+        }
+
+        Long currentUserId = UserContext.get().getId();
+        Integer role = UserContext.get().getRole();
+        boolean isAdmin = role != null && role >= 1;
+
+        ProjectInfo project = projectInfoMapper.getProjectById(request.getProjectId());
+        if (project == null) {
+            throw new BusinessException(ErrorCode.NOT_FOUND_ERROR, "项目不存在");
+        }
+
+        boolean isLeader = currentUserId.equals(project.getLeaderId());
+        if (!isAdmin && !isLeader) {
+            throw new BusinessException(ErrorCode.NO_AUTH_ERROR, "无权限操作该项目");
+        }
+
+        if (!Integer.valueOf(2).equals(project.getStatus())) {
+            throw new BusinessException(ErrorCode.OPERATION_ERROR, "当前项目状态不允许重提");
+        }
+
+        int rows = projectInfoMapper.resubmitProject(
+                request.getProjectId(),
+                request.getProjectName(),
+                request.getDescription(),
+                request.getBudget()
+        );
+        if (rows <= 0) {
+            throw new BusinessException(ErrorCode.OPERATION_ERROR, "重提失败，请稍后重试");
+        }
+
+        ProjectAuditLog auditLog = new ProjectAuditLog();
+        auditLog.setProjectId(project.getId());
+        auditLog.setModuleType(1);
+        auditLog.setBusinessId(project.getId());
+        auditLog.setOperatorId(currentUserId);
+        auditLog.setAction("项目重提");
+        auditLog.setRemark(request.getResubmitReason());
+        projectAuditLogMapper.insertAuditLog(auditLog);
+
+        ProjectResubmitVO vo = new ProjectResubmitVO();
+        vo.setProjectId(project.getId());
+        vo.setStatus(0);
+        vo.setStatusText("申报待审");
         return vo;
     }
 }

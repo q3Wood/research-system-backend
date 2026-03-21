@@ -23,7 +23,7 @@ public class ProjectAuditRequestDTO implements Serializable {
     /**
      * 审核结果状态
      * 1 - 审核通过 (变为执行中)
-     * 3 - 审核驳回 (变为已驳回)
+        * 2 - 审核驳回 (变为已驳回)
      */
     @NotNull(message = "审核结果状态不能为空")
     private Integer auditStatus;

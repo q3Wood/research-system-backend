@@ -25,5 +25,12 @@ public interface ProjectInfoMapper extends BaseMapper<ProjectInfo> {
             @Param("offset") long offset,
             @Param("limit") long limit);
 
+    int resubmitProject(@Param("projectId") Long projectId,
+                        @Param("projectName") String projectName,
+                        @Param("description") String description,
+                        @Param("budget") java.math.BigDecimal budget);
+
+    int logicalDeleteProject(@Param("projectId") Long projectId);
+
     int deductProjectBalance(@Param("projectId") Long projectId, @Param("amount") java.math.BigDecimal amount);
 }

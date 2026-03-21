@@ -12,7 +12,7 @@ public class ProjectQueryRequestDTO extends PageRequest {
     @Schema(description = "项目名称模糊搜索(可选)")
     private String searchText;
 
-    @Schema(description = "项目状态:0-申报待审,1-执行中,2-已结题,3-已驳回(可选)")
+    @Schema(description = "项目状态:0-待审,1-通过(执行中),2-驳回,3-已结题(可选)")
     private Integer status;
 
     @Schema(description = "项目负责人ID(用于查询某个人创建的所有项目)(可选)")
